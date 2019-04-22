@@ -1,0 +1,34 @@
+**************************************************
+Model Set-up: Describing steps of model development
+**************************************************
+
+1. User sets up environment
+	- Chooser selects that a horse is active by using a Chooser.. if Chooser set "yes" horse is active. Else horse is not active.
+	- Sliders used to select 1) horse's average speed
+				 2) horse's standard deviation of speed
+				 3) win-place-show-ratio of horse
+				 4) win-place-show-ratio of jockey
+	- Input used to select	 1) horse's name
+	-			 2) gate position
+	- Slider used to select the length of the race (in furlongs)
+
+2. How to ramp up speed
+   - Each horse should start in their gate positions and then accelerate at a reasonable pace
+   up to their mean speed if possible.
+   - If a horse is blocked, it must go the speed that they are blocked or slower
+   - If a horse is not blocked, then they can accelerate to their average mean
+   - Once a horse is within 2 standard deviations of their speed, their speed will be 
+   simulated by a stochastic process that pulls from the distribution with a mean and
+   standard deviation
+   
+
+***********************************************************************
+Document any assumptions made in data collection or model building here
+***********************************************************************
+1. The length of the race definitely changes the speed. Therefore, if a horse
+runs a lot of short races, its speed figures may be exaggerated. It is assumed
+that horses previous races are similar in length races to the race being simulated.
+2. It is assumed that the jockey's skill and horse's skill have similar affects on
+decision making
+3. It is assumed that weather, track condition (firm, wet, fast), and the track itself
+do not actually affect the outcome of the race.
