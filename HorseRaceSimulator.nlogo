@@ -1,4 +1,16 @@
 
+
+to setup
+  clear-output
+  if (member? "NAME:" HORSE1_NAME)[
+    let pos position "NAME:" HORSE1_NAME + 5
+    let pos2 position "\n" HORSE1_NAME
+    let name substring HORSE1_NAME pos pos2
+    output-print name
+    let rest substring HORSE1_NAME pos2 length HORSE1_NAME
+    output-print rest
+  ]
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -26,6 +38,80 @@ GRAPHICS-WINDOW
 1
 ticks
 30.0
+
+TEXTBOX
+670
+10
+1224
+178
+SETUP AGENTS\n1. Indicate if horse in race with \"ON\" or \"OFF\"4\n2. Enter horse's name if selected\n3. Enter average/standard deviation of horse speed (mph)\n4. Enter win-place-show ratio of horse\n->(wins+places+shows)/total races\n5. Enter win-place-show ratio of jockey\n6. Enter gate position of horse
+15
+0.0
+1
+
+TEXTBOX
+25
+19
+175
+97
+ENVIRONMENT SETUP\n1. Enter length of race
+15
+0.0
+1
+
+SLIDER
+13
+110
+185
+143
+LENGTH
+LENGTH
+5.5
+12
+8.5
+0.5
+1
+furlongs
+HORIZONTAL
+
+SWITCH
+674
+191
+777
+224
+HORSE1
+HORSE1
+1
+1
+-1000
+
+INPUTBOX
+674
+233
+943
+451
+HORSE1_NAME
+NAME: Matthew\nSPEED AVG: 75\nSPEED STD: 4\nWPS RATIO HORSE: 0.432\nWPS RATIO JOCKEY: 0.324\nGATE POSITION: 2\n\n
+1
+1
+String
+
+BUTTON
+49
+199
+113
+233
+NIL
+setup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
