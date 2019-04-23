@@ -2,20 +2,21 @@
 
 to setup
   clear-output
-  if (member? "NAME:" HORSE1_NAME)[
-    let pos position "NAME:" HORSE1_NAME + 5
-    let pos2 position "\n" HORSE1_NAME
-    let name substring HORSE1_NAME pos pos2
+  if (member? "NAME:" AGENT_PARAMETERS)[
+    let pos position "NAME:" AGENT_PARAMETERS + 5
+    let pos2 position "," AGENT_PARAMETERS
+    let name substring AGENT_PARAMETERS (position "NAME:" AGENT_PARAMETERS + 5) pos2
+    remove " " name
     output-print name
-    let rest substring HORSE1_NAME pos2 length HORSE1_NAME
+    let rest substring AGENT_PARAMETERS pos2 length AGENT_PARAMETERS
     output-print rest
   ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
+200
 10
-647
+637
 448
 -1
 -1
@@ -40,12 +41,12 @@ ticks
 30.0
 
 TEXTBOX
-670
+664
 10
-1224
-178
-SETUP AGENTS\n1. Indicate if horse in race with \"ON\" or \"OFF\"4\n2. Enter horse's name if selected\n3. Enter average/standard deviation of horse speed (mph)\n4. Enter win-place-show ratio of horse\n->(wins+places+shows)/total races\n5. Enter win-place-show ratio of jockey\n6. Enter gate position of horse
-15
+1218
+184
+SETUP AGENTS\n1. Enter horse's name if selected\n2. Enter average/standard deviation of horse speed (mph)\n3. Enter win-place-show ratio of horse\n->(wins+places+shows)/total races\n4. Enter win-place-show ratio of jockey\n5. Enter gate position of horse\nEX.\nNAME: horse1_name, horse2_name,...\nSPEED AVG: horse1_speed, horse2_speed,...\nso on...
+12
 0.0
 1
 
@@ -53,17 +54,17 @@ TEXTBOX
 25
 19
 175
-97
-ENVIRONMENT SETUP\n1. Enter length of race
+114
+ENVIRONMENT SETUP\n1. Enter length of race\n2. Enter number of horses
 15
 0.0
 1
 
 SLIDER
-13
-110
-185
-143
+11
+116
+183
+149
 LENGTH
 LENGTH
 5.5
@@ -74,33 +75,11 @@ LENGTH
 furlongs
 HORIZONTAL
 
-SWITCH
-674
-191
-777
-224
-HORSE1
-HORSE1
-1
-1
--1000
-
-INPUTBOX
-674
-233
-943
-451
-HORSE1_NAME
-NAME: Matthew\nSPEED AVG: 75\nSPEED STD: 4\nWPS RATIO HORSE: 0.432\nWPS RATIO JOCKEY: 0.324\nGATE POSITION: 2\n\n
-1
-1
-String
-
 BUTTON
-49
-199
-113
-233
+56
+239
+120
+273
 NIL
 setup
 NIL
@@ -112,6 +91,28 @@ NIL
 NIL
 NIL
 1
+
+INPUTBOX
+650
+180
+1277
+412
+AGENT_PARAMETERS
+NAME: horse1_name,horse2_name,horse3_name,horse3_name,horse4_name\nSPEED AVG: 35.321,34.3214,35.3424,34.323\nSPEED_STD: 1.232,1.231,0.4321,3.2314\nWPS RATIO HORSE: 0.342,0.343,0.231,0.14321\nWPS RATIO JOCKEY: 0.3242,0.432,0.4321,0.1342\nGATE POSITION: 3,4,1,2
+1
+1
+String
+
+INPUTBOX
+11
+152
+184
+212
+NUMBER_OF_HORSES
+8.0
+1
+0
+Number
 
 @#$#@#$#@
 ## WHAT IS IT?
