@@ -13,6 +13,7 @@ Model Set-up: Describing steps of model development
 	- Matthew: Measured track dimensions to make model realistic. 1 block ~= 0.00672635 miles
 	- Matthew: worked on heading
 	- MAatthew: Fixed speed so that the track and the time that the agents navigate the track is realistic
+
 2. How to ramp up speed
    - Each horse should start in their gate positions and then accelerate at a reasonable pace
    up to their mean speed if possible. The acceleration will be governed by a normally distributed random variable around a certain mean
@@ -22,6 +23,18 @@ Model Set-up: Describing steps of model development
    simulated by a stochastic process that pulls from the distribution with a mean and
    standard deviation
    
+
+3. Things that need to be done
+	- How to not make them overlap
+		- look at "myself" and "self" keys
+		- ability to ask neighbors (patches around an agent) and perform an operation
+		- look at the ability to see distance betweeen two agents
+		- idea: Length and speeds are realistic. We can scale the distances differently. 
+	- How to implement decisions
+	- Issue: Horse behind will always be disadvantaged...
+	- need to implement run-up
+	- need to implement distance
+	- need to implement statistical collection/result comparison
 
 ***********************************************************************
 Document any assumptions made in data collection or model building here

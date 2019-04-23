@@ -37,8 +37,8 @@ to setup-horses
      set gate_position read-from-string m_gate_position
      set heading 90
      set size 3
-     set ycor -18 + gate_position
-     set xcor 20
+     setxy 20 (-18 + gate_position)
+     ;set xcor 20
      set curspeed 0
      set curaccel 20000 ;; miles/hour^2
     ]
@@ -176,6 +176,16 @@ to update-heading
      if(ycor >= -22 and ycor < -4 ) [ set heading 135  ]
     ]
   ]
+  ;; looks at the 8 patches around the turtle
+  ask neighbors [
+     if (pcolor = brown)[
+      ;; probably something to do with myself
+     ]
+     ask turtles-here [
+      ;;show name
+       ;;output-print distance myself ;; outputs distance to turtles on this specific patch
+    ]
+  ]
 end
 
 ; horse procedure; accelerate
@@ -263,9 +273,9 @@ HORIZONTAL
 
 BUTTON
 59
-354
+355
 139
-426
+427
 NIL
 setup
 NIL
