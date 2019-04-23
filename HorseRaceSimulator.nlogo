@@ -1,23 +1,171 @@
+breed [horses horse]
+horses-own [name avg_speed std_speed horse_wps_ratio jockey_wps_ratio gate_position curspeed curaccel] ;; has default parameters xcor, ycor, and heading
+globals [params]
+
+to setup-horses
+  set-default-shape horses "horse"
+  if (NUMBER_OF_HORSES > 12)
+  [
+    error "MAXIMUM HORSES: 12"
+  ]
+  ;;create-horses NUMBER_OF_HORSES
+  set params (list)
+  let horseIndex 0
+  foreach ["NAME:" "SPEED AVG:" "SPEED STD:" "WPS RATIO HORSE:" "WPS RATIO JOCKEY:" "GATE POSITION:"]
+  [
+    x -> parse x horseIndex
+    set horseIndex horseIndex + 1
+  ]
+  output-print params
+  let horse_idx 0
+  while [horse_idx < NUMBER_OF_HORSES]
+  [
+    let m_name (item (5 * NUMBER_OF_HORSES + horse_idx) params)
+    let m_speed_avg (item (4 * NUMBER_OF_HORSES + horse_idx) params)
+    let m_speed_std (item (3 * NUMBER_OF_HORSES + horse_idx) params)
+    let m_wps_horse (item (2 * NUMBER_OF_HORSES + horse_idx) params)
+    let m_wps_jockey (item (1 * NUMBER_OF_HORSES + horse_idx) params)
+    let m_gate_position (item (0 * NUMBER_OF_HORSES + horse_idx) params)
+    create-horses 1 [
+     set name m_name
+     set avg_speed read-from-string m_speed_avg
+     set std_speed read-from-string m_speed_std
+     set horse_wps_ratio read-from-string m_wps_horse
+     set jockey_wps_ratio read-from-string m_wps_jockey
+     set gate_position read-from-string m_gate_position
+     set heading 90
+     set size 2
+     set ycor -18 + gate_position
+     set xcor 20
+     set curspeed 0
+     set curaccel 20416 ;; miles/hour^2
+    ]
+    set horse_idx horse_idx + 1
+  ]
+end
+
+to parse [x index]
+  let start position x AGENT_PARAMETERS
+  let input substring AGENT_PARAMETERS start length(AGENT_PARAMETERS)
+  set start length(x)
+  let endOfLine position "\n" input
+  let parsedParams 0 ;; used for error checking
+  if (member? x input)[
+     let endOfParam position "," input
+     while [not is-boolean? endOfParam and endOfLine > endOfParam][
+       let param substring input start endOfParam
+       set param remove " " param
+       set params fput param params
+       set input substring input (endOfParam + 1) length(input)
+       set start 0
+       set endOfParam position "," input
+       set endOfLine position "\n" input
+       set parsedParams parsedParams + 1
+    ]
+  ]
+  if (parsedParams != NUMBER_OF_HORSES)
+  [
+    error insert-item 14 "INVALID INPUT Too few/many parameters: " x
+  ]
+end
+
+to setup-patches
+  let track_straight_length 40
+  ask patches [
+   set pcolor green
+  ]
+  let idx 0
+  while [idx < track_straight_length]
+  [
+   let xcor_out 20 + idx
+   ask patch xcor_out -4 [ set pcolor brown]
+   ask patch xcor_out -19 [ set pcolor brown]
+   ask patch xcor_out -34 [ set pcolor brown]
+   ask patch xcor_out -49 [ set pcolor brown]
+   set idx idx + 1
+  ]
+  ;; extend 7 on both sides of outside
+  let i 1
+  while [ i <= 7 ]
+  [
+   ask patch (20 - i) -4 [ set pcolor brown]
+   ask patch (59 + i) -4 [ set pcolor brown]
+   ask patch (20 - i) -49 [ set pcolor brown]
+   ask patch (59 + i) -49 [ set pcolor brown]
+   set i i + 1
+  ]
+  ;; draw inner-circle
+  ;; draw line from (63,-22) -> (63,-31)
+  ;; draw line from (17,-22) -> (17,-31)
+  set i -22
+  while [i > -32]
+  [
+    ask patch 63 i [set pcolor brown]
+    ask patch 17 i [set pcolor brown]
+    set i i - 1
+  ]
+  ;; draw lines for inner-track
+  set i 0
+  let j1 60
+  let j2 17
+  while [ j1 < 63]
+  [
+    ask patch j1 (-19 - i) [set pcolor brown]
+    ask patch j1 (-34 + i) [set pcolor brown]
+    ask patch j2 (-22 + i) [set pcolor brown]
+    ask patch j2 (-31 - i) [set pcolor brown]
+    set j1 j1 + 1
+    set j2 j2 + 1
+    set i i + 1
+  ]
+  ;; draw outer-circle
+  ;; draw line from (78,-15)->(78,-38)
+  ;; draw line from (2,-15)->(2,-38)
+  set i -15
+  while [i >= -38]
+  [
+    ask patch 78 i [set pcolor brown]
+    ask patch 2 i [set pcolor brown]
+    set i i - 1
+  ]
+  set i 0
+  set j1 78
+  set j2 2
+  while [ j1 >= 67]
+  [
+    ask patch j1 (-15 + i) [set pcolor brown]
+    ask patch j1 (-38 - i) [set pcolor brown]
+    ask patch j2 (-15 + i) [set pcolor brown]
+    ask patch j2 (-38 - i) [set pcolor brown]
+    set j1 j1 - 1
+    set j2 j2 + 1
+    set i i + 1
+  ]
+
+
+end
 
 
 to setup
-  clear-output
-  if (member? "NAME:" AGENT_PARAMETERS)[
-    let pos position "NAME:" AGENT_PARAMETERS + 5
-    let pos2 position "," AGENT_PARAMETERS
-    let name substring AGENT_PARAMETERS (position "NAME:" AGENT_PARAMETERS + 5) pos2
-    remove " " name
-    output-print name
-    let rest substring AGENT_PARAMETERS pos2 length AGENT_PARAMETERS
-    output-print rest
-  ]
+  clear-all
+  setup-horses
+  setup-patches
+  reset-ticks
+end
+
+to accelerate
+
+end
+
+to go
+  tick
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
 200
 10
-637
-448
+1257
+734
 -1
 -1
 13.0
@@ -27,13 +175,13 @@ GRAPHICS-WINDOW
 1
 1
 0
+0
+0
 1
-1
-1
--16
-16
--16
-16
+0
+80
+-54
+0
 0
 0
 1
@@ -41,11 +189,11 @@ ticks
 30.0
 
 TEXTBOX
-664
-10
-1218
-184
-SETUP AGENTS\n1. Enter horse's name if selected\n2. Enter average/standard deviation of horse speed (mph)\n3. Enter win-place-show ratio of horse\n->(wins+places+shows)/total races\n4. Enter win-place-show ratio of jockey\n5. Enter gate position of horse\nEX.\nNAME: horse1_name, horse2_name,...\nSPEED AVG: horse1_speed, horse2_speed,...\nso on...
+1299
+57
+1854
+289
+SETUP AGENTS\n1. Enter horse's name if selected\n2. Enter average/standard deviation of horse speed (mph)\n3. Enter win-place-show ratio of horse\n->(wins+places+shows)/total races\n4. Enter win-place-show ratio of jockey\n5. Enter gate position of horse\nEX.\nNAME: horse1_name, horse2_name,...\nSPEED AVG: horse1_speed, horse2_speed,...\nNote: Must be iterable (, at end) and each line separated by newline (\\n) including last line.
 12
 0.0
 1
@@ -54,32 +202,32 @@ TEXTBOX
 25
 19
 175
-114
+128
 ENVIRONMENT SETUP\n1. Enter length of race\n2. Enter number of horses
 15
 0.0
 1
 
 SLIDER
-11
-116
-183
-149
+12
+147
+176
+181
 LENGTH
 LENGTH
 5.5
 12
-8.5
+8.0
 0.5
 1
 furlongs
 HORIZONTAL
 
 BUTTON
-56
-239
-120
-273
+59
+354
+139
+426
 NIL
 setup
 NIL
@@ -93,26 +241,58 @@ NIL
 1
 
 INPUTBOX
-650
-180
-1277
-412
+1294
+264
+2149
+509
 AGENT_PARAMETERS
-NAME: horse1_name,horse2_name,horse3_name,horse3_name,horse4_name\nSPEED AVG: 35.321,34.3214,35.3424,34.323\nSPEED_STD: 1.232,1.231,0.4321,3.2314\nWPS RATIO HORSE: 0.342,0.343,0.231,0.14321\nWPS RATIO JOCKEY: 0.3242,0.432,0.4321,0.1342\nGATE POSITION: 3,4,1,2
+NAME: horse1_name,horse2_name,horse3_name,horse4_name,horse5,\nSPEED AVG: 35.321,34.3214,35.3424,34.323,33,\nSPEED STD: 1.232,1.231,0.4321,3.2314,1.2,\nWPS RATIO HORSE: 0.342,0.343,0.231,0.14321,0.432,\nWPS RATIO JOCKEY: 0.3242,0.432,0.4321,0.1342,0.4320,\nGATE POSITION: 3,4,1,2,5,\n
 1
 1
 String
 
 INPUTBOX
-11
-152
-184
-212
+12
+227
+186
+302
 NUMBER_OF_HORSES
-8.0
+5.0
 1
 0
 Number
+
+SLIDER
+10
+185
+175
+219
+RUNUP
+RUNUP
+0
+0.05
+0.04
+0.01
+1
+miles
+HORIZONTAL
+
+BUTTON
+60
+444
+139
+509
+go
+go\n
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+0
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -292,6 +472,23 @@ Circle -7500403 true true 96 51 108
 Circle -16777216 true false 113 68 74
 Polygon -10899396 true false 189 233 219 188 249 173 279 188 234 218
 Polygon -10899396 true false 180 255 150 210 105 210 75 240 135 240
+
+horse
+true
+8
+Rectangle -6459832 true false 120 45 180 255
+Circle -1 true false 105 15 90
+Polygon -11221820 true true 120 150 180 150 165 195 150 150 135 195 120 150
+Polygon -11221820 true true 120 210 180 210 180 225 120 225 120 210 135 195 150 210 165 195 180 210
+Polygon -11221820 true true 120 150 135 120 150 150 165 120 180 150 120 135 180 120 120 120 180 135 120 150
+Polygon -11221820 true true 120 165 180 180 120 195 180 195 120 180 180 165
+Rectangle -6459832 true false 105 210 120 225
+Rectangle -6459832 true false 105 135 120 150
+Rectangle -6459832 true false 180 135 195 150
+Rectangle -6459832 true false 180 210 195 225
+Rectangle -6459832 true false 135 255 150 255
+Rectangle -6459832 true false 135 270 165 270
+Rectangle -6459832 true false 135 255 165 270
 
 house
 false

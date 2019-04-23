@@ -3,18 +3,15 @@ Model Set-up: Describing steps of model development
 **************************************************
 
 1. User sets up environment
-	- Chooser selects that a horse is active by using a Chooser.. if Chooser set "yes" horse is active. Else horse is not active.
-	- Sliders used to select 1) horse's average speed
-				 2) horse's standard deviation of speed
-				 3) win-place-show-ratio of horse
-				 4) win-place-show-ratio of jockey
-	- Input used to select	 1) horse's name
-	-			 2) gate position
-	- Slider used to select the length of the race (in furlongs)
-
+	- User selects the track length and the number of horses and then
+	- appropriately enters the parameters for each horse
+	- Matthew: Setup user environment and what variables each agent has
+	- Matthew: Did some error checking on the user input.
+	- Matthew: Created the horses with their proper variables
+	- Matthew: Created the track
 2. How to ramp up speed
    - Each horse should start in their gate positions and then accelerate at a reasonable pace
-   up to their mean speed if possible.
+   up to their mean speed if possible. The acceleration will be governed by a normally distributed random variable around a certain mean
    - If a horse is blocked, it must go the speed that they are blocked or slower
    - If a horse is not blocked, then they can accelerate to their average mean
    - Once a horse is within 2 standard deviations of their speed, their speed will be 
@@ -32,3 +29,6 @@ that horses previous races are similar in length races to the race being simulat
 decision making
 3. It is assumed that weather, track condition (firm, wet, fast), and the track itself
 do not actually affect the outcome of the race.
+4. Issues: Run-up time. horse's run up to the gate and then start, which skews data and throws
+off the simulation. The simulation takes into account the run-up by not starting the race length
+for a specific amount, which can be set. Often between 0 and 0.03 miles. 
