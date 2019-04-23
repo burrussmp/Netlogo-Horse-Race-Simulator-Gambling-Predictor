@@ -1,14 +1,16 @@
 breed [horses horse]
-horses-own [name avg_speed std_speed horse_wps_ratio jockey_wps_ratio gate_position curspeed curaccel] ;; has default parameters xcor, ycor, and heading
-globals [params]
+horses-own [name avg_speed std_speed horse_wps_ratio jockey_wps_ratio gate_position curspeed curaccel distancetravelled] ;; has default parameters xcor, ycor, and heading
+globals [params
+         timestep
+        ]
 
 to setup-horses
-  set-default-shape horses "horse"
-  if (NUMBER_OF_HORSES > 12)
+  set-default-shape horses "horse" ;; set the shape of the agents
+  if (NUMBER_OF_HORSES > 12) ;; the track is only made to fit 12 horses
   [
     error "MAXIMUM HORSES: 12"
   ]
-  ;;create-horses NUMBER_OF_HORSES
+  set timestep 0.03 ;; set the timestep
   set params (list)
   let horseIndex 0
   foreach ["NAME:" "SPEED AVG:" "SPEED STD:" "WPS RATIO HORSE:" "WPS RATIO JOCKEY:" "GATE POSITION:"]
@@ -34,11 +36,11 @@ to setup-horses
      set jockey_wps_ratio read-from-string m_wps_jockey
      set gate_position read-from-string m_gate_position
      set heading 90
-     set size 2
+     set size 3
      set ycor -18 + gate_position
      set xcor 20
      set curspeed 0
-     set curaccel 20416 ;; miles/hour^2
+     set curaccel 20000 ;; miles/hour^2
     ]
     set horse_idx horse_idx + 1
   ]
@@ -151,14 +153,50 @@ to setup
   setup-horses
   setup-patches
   reset-ticks
+  reset-timer
 end
 
-to accelerate
+to update-heading
+  ;; get general sense of direction
+  ifelse (xcor >= 20 and xcor <= 60)
+  [
+    ifelse (ycor <= -22) [ set heading 270 ];; #1
+      [ set heading 90  ];; #2
+  ]
+  [
+    ifelse (xcor < 20)
+    [
+     if(ycor >= -49 and ycor < -33) [ set heading 315 ]
+     if(ycor >= -33 and ycor < -22) [ set heading 0 ]
+     if(ycor >= -22 and ycor < -4 ) [ set heading 45 ]
+    ]
+    [
+     if(ycor >= -49 and ycor < -33) [ set heading 225 ]
+     if(ycor >= -33 and ycor < -22) [ set heading 180 ]
+     if(ycor >= -22 and ycor < -4 ) [ set heading 135  ]
+    ]
+  ]
+end
 
+; horse procedure; accelerate
+to move-forward
+   update-heading
+   let prevspeed curspeed
+   ifelse (abs (curspeed - avg_speed) < std_speed * 2 or (curspeed - avg_speed) > 3 * std_speed) ;; if we are within 2 standard deviations of the speed, randomly decide speed
+    [
+      set curspeed random-normal avg_speed std_speed
+    ]
+    [
+      set curspeed (curspeed + curaccel * (timestep / 3600 ))
+    ]
+  set distancetravelled distancetravelled + (prevspeed * (timestep / 3600) ) + (0.5 * curaccel * ( (timestep / 3600) ^ 2 ))
+  fd ((prevspeed * (timestep / 3600) ) + (0.5 * curaccel * ( (timestep / 3600) ^ 2 ))) * 174.72871
 end
 
 to go
-  tick
+  ;;output-print ticks
+  ask horses [move-forward]
+  tick-advance timestep
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -243,8 +281,8 @@ NIL
 INPUTBOX
 1294
 264
-2149
-509
+2173
+654
 AGENT_PARAMETERS
 NAME: horse1_name,horse2_name,horse3_name,horse4_name,horse5,\nSPEED AVG: 35.321,34.3214,35.3424,34.323,33,\nSPEED STD: 1.232,1.231,0.4321,3.2314,1.2,\nWPS RATIO HORSE: 0.342,0.343,0.231,0.14321,0.432,\nWPS RATIO JOCKEY: 0.3242,0.432,0.4321,0.1342,0.4320,\nGATE POSITION: 3,4,1,2,5,\n
 1

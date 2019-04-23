@@ -9,6 +9,10 @@ Model Set-up: Describing steps of model development
 	- Matthew: Did some error checking on the user input.
 	- Matthew: Created the horses with their proper variables
 	- Matthew: Created the track
+	- Matthew: Worked on getting the speed to work
+	- Matthew: Measured track dimensions to make model realistic. 1 block ~= 0.00672635 miles
+	- Matthew: worked on heading
+	- MAatthew: Fixed speed so that the track and the time that the agents navigate the track is realistic
 2. How to ramp up speed
    - Each horse should start in their gate positions and then accelerate at a reasonable pace
    up to their mean speed if possible. The acceleration will be governed by a normally distributed random variable around a certain mean
