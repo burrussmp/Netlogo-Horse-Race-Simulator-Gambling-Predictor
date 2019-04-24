@@ -48,4 +48,5 @@ decision making
 do not actually affect the outcome of the race.
 4. Issues: Run-up time. horse's run up to the gate and then start, which skews data and throws
 off the simulation. The simulation takes into account the run-up by not starting the race length
-for a specific amount, which can be set. Often between 0 and 0.03 miles. 
+for a specific amount, which can be set. Often between 0 and 0.03 miles. This was also mitigated by picking races with
+very few run-up lengths.
