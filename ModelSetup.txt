@@ -49,3 +49,10 @@ do not actually affect the outcome of the race.
 off the simulation. Often between 0 and 0.03 miles. This was also mitigated by picking races with
 very few run-up lengths.
 5. Distance is based on inner track
+
+NAME: horse1_name,horse2_name,horse3_name,horse4_name,horse5,h6,h7,h8,h9,h10,h11,h12,
+SPEED AVG: 35.321,34.3214,35.3424,34.323,33,34,34,34,34,34,34,34,
+SPEED STD: 1.232,1.231,0.4321,3.2314,1.2,1,1,1,1,1,1,1,
+WPS RATIO HORSE: 0.342,0.343,0.231,0.14321,0.432,0.3,0.3,0.3,0.3,0.3,0.3,0.3,
+WPS RATIO JOCKEY: 0.3242,0.432,0.4321,0.1342,0.4320,0.4,0.4,0.4,0.4,0.4,0.4,0.4,
+GATE POSITION: 3,4,1,2,5,6,7,8,9,10,11,12,

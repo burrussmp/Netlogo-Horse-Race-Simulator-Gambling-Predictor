@@ -73,7 +73,7 @@ to setup-horses
       ]
      ]
      set laps_completed 0
-     setxy start (-19 + (gate_position * 0.3309255871)) ; there are 0.1985553523for 10 feet (width)
+     setxy start (-19 + (gate_position * 0.2647404697)) ; there are 0.2647404697 for 8 feet (width)
      ;; set curspeed based on a boost
      if (bernoulli horse_wps_ratio)[
        set curspeed BOOST
@@ -119,20 +119,20 @@ to setup-patches
   while [idx < track_straight_length]
   [
    let xcor_out 20 + idx
-   ask patch xcor_out -4 [ set pcolor brown]
+   ask patch xcor_out -14 [ set pcolor brown]
    ask patch xcor_out -19 [ set pcolor brown]
    ask patch xcor_out -34 [ set pcolor brown]
-   ask patch xcor_out -49 [ set pcolor brown]
+   ask patch xcor_out -39 [ set pcolor brown]
    set idx idx + 1
   ]
-  ;; extend 7 on both sides of outside
+  ;; extend 3 on both sides of outside
   let i 1
-  while [ i <= 7 ]
+  while [ i <= 3 ]
   [
-   ask patch (20 - i) -4 [ set pcolor brown]
-   ask patch (59 + i) -4 [ set pcolor brown]
-   ask patch (20 - i) -49 [ set pcolor brown]
-   ask patch (59 + i) -49 [ set pcolor brown]
+   ask patch (21 - i) -14 [ set pcolor brown]
+   ask patch (59 + i) -14 [ set pcolor brown]
+   ask patch (21 - i) -39 [ set pcolor brown]
+   ask patch (59 + i) -39 [ set pcolor brown]
    set i i + 1
   ]
   ;; draw inner-circle
@@ -160,24 +160,24 @@ to setup-patches
     set i i + 1
   ]
   ;; draw outer-circle
-  ;; draw line from (78,-15)->(78,-38)
-  ;; draw line from (2,-15)->(2,-38)
-  set i -15
-  while [i >= -38]
+  ;; draw line from (68,-15)->(68,-38)
+  ;; draw line from (12,-15)->(12,-38)
+  set i -21
+  while [i >= -33]
   [
-    ask patch 78 i [set pcolor brown]
-    ask patch 2 i [set pcolor brown]
+    ask patch 68 i [set pcolor brown]
+    ask patch 12 i [set pcolor brown]
     set i i - 1
   ]
   set i 0
-  set j1 78
-  set j2 2
-  while [ j1 >= 67]
+  set j1 68
+  set j2 12
+  while [ j1 >= 63]
   [
-    ask patch j1 (-15 + i) [set pcolor brown]
-    ask patch j1 (-38 - i) [set pcolor brown]
-    ask patch j2 (-15 + i) [set pcolor brown]
-    ask patch j2 (-38 - i) [set pcolor brown]
+    ask patch j1 (-20 + i) [set pcolor brown]
+    ask patch j1 (-34 - i) [set pcolor brown]
+    ask patch j2 (-20 + i) [set pcolor brown]
+    ask patch j2 (-34 - i) [set pcolor brown]
     set j1 j1 - 1
     set j2 j2 + 1
     set i i + 1
@@ -186,13 +186,13 @@ to setup-patches
   ifelse (finish_y_high_or_low? = "high")
   [
     let y -18
-    while[y < -4][
+    while[y < -14][
       ask patch finish_x y [set pcolor white]
       set y y + 1
     ]
   ]
   [
-   let y -48
+   let y -39
    while[y < -34][
      ask patch finish_x y [set pcolor white]
      set y y + 1
@@ -407,7 +407,7 @@ INPUTBOX
 1904
 557
 AGENT_PARAMETERS
-NAME: horse1_name,horse2_name,horse3_name,horse4_name,horse5,\nSPEED AVG: 35.321,34.3214,35.3424,34.323,33,\nSPEED STD: 1.232,1.231,0.4321,3.2314,1.2,\nWPS RATIO HORSE: 0.342,0.343,0.231,0.14321,0.432,\nWPS RATIO JOCKEY: 0.3242,0.432,0.4321,0.1342,0.4320,\nGATE POSITION: 3,4,1,2,5,\n
+NAME: horse1_name,horse2_name,horse3_name,horse4_name,horse5,h6,h7,h8,h9,h10,h11,h12,\nSPEED AVG: 35.321,34.3214,35.3424,34.323,33,34,34,34,34,34,34,34,\nSPEED STD: 1.232,1.231,0.4321,3.2314,1.2,1,1,1,1,1,1,1,\nWPS RATIO HORSE: 0.342,0.343,0.231,0.14321,0.432,0.3,0.3,0.3,0.3,0.3,0.3,0.3,\nWPS RATIO JOCKEY: 0.3242,0.432,0.4321,0.1342,0.4320,0.4,0.4,0.4,0.4,0.4,0.4,0.4,\nGATE POSITION: 3,4,1,2,5,6,7,8,9,10,11,12,\n
 1
 1
 String
@@ -418,7 +418,7 @@ INPUTBOX
 188
 307
 NUMBER_OF_HORSES
-5.0
+12.0
 1
 0
 Number
