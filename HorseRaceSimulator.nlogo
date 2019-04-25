@@ -392,7 +392,7 @@ INPUTBOX
 188
 307
 NUMBER_OF_HORSES
-12.0
+0.0
 1
 0
 Number
@@ -433,7 +433,7 @@ BOOST
 BOOST
 0
 5
-5.0
+0.0
 1
 1
 mph
