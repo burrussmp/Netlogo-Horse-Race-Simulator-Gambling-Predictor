@@ -1,12 +1,16 @@
 breed [horses horse]
-horses-own [name avg_speed std_speed horse_wps_ratio jockey_wps_ratio gate_position curspeed curaccel distancetravelled laps_completed prevX prevY] ;; has default parameters xcor, ycor, and heading
-
+breed [stats stat]
+stats-own [name places shows thirds]
+horses-own [name avg_speed std_speed horse_wps_ratio jockey_wps_ratio gate_position curspeed curaccel distancetravelled laps_completed prevX prevY place] ;; has default parameters xcor, ycor, and heading
 globals [params
+  count_finished
+  total_runs
   timestep
   laps_needed
   finish_x
   finish_y_high_or_low?
   ]
+;; tmp
 
 to setup-horses
   set-default-shape horses "horse" ;; set the shape of the agents
@@ -22,7 +26,7 @@ to setup-horses
     x -> parse x horseIndex
     set horseIndex horseIndex + 1
   ]
-  output-print params
+  ;;output-print params
   let horse_idx 0
   while [horse_idx < NUMBER_OF_HORSES]
   [
@@ -76,6 +80,18 @@ to setup-horses
       ]
      set curaccel 20000 ;; miles/hour^2
     ]
+
+    ;; set up stats but only on first trial
+    if (total_runs = 1)
+    [
+      create-stats 1 [
+        set name m_name
+        set places 0
+        set shows 0
+        set thirds 0
+      ]
+    ]
+
     set horse_idx horse_idx + 1
   ]
 end
@@ -200,9 +216,18 @@ end
 
 to setup
   clear-all
+  set total_runs 1
+  set count_finished 1
   setup-horses
   setup-patches
+  reset-ticks
+  reset-timer
+end
 
+to rerun
+  set total_runs (total_runs + 1)
+  set count_finished 1
+  setup-horses
   reset-ticks
   reset-timer
 end
@@ -271,8 +296,23 @@ to finished?
     if (ycor < -24 and prevX >= finish_x and xcor <= finish_x)[set laps_completed laps_completed + 1]
   ]
   if (laps_completed > laps_needed) [
-  output-print distancetravelled
-  die]
+
+    if (count_finished = 1)
+    [
+      ask stats with [name = ([name] of myself)][set places (places + 1)]
+    ]
+    if (count_finished = 2)
+    [
+      ask stats with [name = ([name] of myself)][set shows (shows + 1)]
+    ]
+    if (count_finished = 3)
+    [
+      ask stats with [name = ([name] of myself)][set thirds (thirds + 1)]
+    ]
+
+    set count_finished (count_finished + 1)
+    die
+  ]
 end
 
 to-report bernoulli [p]
@@ -304,18 +344,28 @@ to resolve-conflicts
     ]
   ]
 end
+
+to print_avg_place
+  output-show name ( places / total_runs )
+end
+
 to go
   ;;output-print ticks
-  ask horses [move-forward]
-  ask horses [finished?]
+  ask horses with [laps_completed <= laps_needed][move-forward]
+  ask horses with [laps_completed <= laps_needed][finished?]
   tick-advance timestep
+  if (all? horses [laps_completed > laps_needed])
+  [
+    rerun
+    ask horses [print_avg_place]
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
 200
 10
-1268
-742
+1261
+734
 -1
 -1
 13.0
@@ -378,8 +428,8 @@ NIL
 INPUTBOX
 1294
 264
-2173
-654
+1904
+557
 AGENT_PARAMETERS
 NAME: horse1_name,horse2_name,horse3_name,horse4_name,horse5,\nSPEED AVG: 35.321,34.3214,35.3424,34.323,33,\nSPEED STD: 1.232,1.231,0.4321,3.2314,1.2,\nWPS RATIO HORSE: 0.342,0.343,0.231,0.14321,0.432,\nWPS RATIO JOCKEY: 0.3242,0.432,0.4321,0.1342,0.4320,\nGATE POSITION: 3,4,1,2,5,\n
 1
@@ -392,7 +442,7 @@ INPUTBOX
 188
 307
 NUMBER_OF_HORSES
-0.0
+5.0
 1
 0
 Number
@@ -428,16 +478,23 @@ SLIDER
 14
 316
 186
-350
+349
 BOOST
 BOOST
 0
 5
-0.0
+5.0
 1
 1
 mph
 HORIZONTAL
+
+OUTPUT
+1320
+579
+1866
+701
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
