@@ -68,8 +68,11 @@ to setup-horses
       ]
      ]
      set laps_completed 0
-     setxy start (-19 + (gate_position * .1993103156)) ; there are .1993103156 for 6 feet (width)
-     set curspeed 0
+     setxy start (-19 + (gate_position * 0.1985553523)) ; there are 0.1985553523for 6 feet (width)
+     ;; set curspeed based on a boost
+     if (bernoulli horse_wps_ratio)[
+       set curspeed BOOST
+      ]
      set curaccel 20000 ;; miles/hour^2
     ]
     set horse_idx horse_idx + 1
@@ -264,6 +267,16 @@ to finished?
   die]
 end
 
+to-report bernoulli [p]
+  report ((random-float 1) < p )
+end
+
+to compete
+  ask horses in-radius 0.1985553523 ;; ask horses that are within 6 ft of this horse
+  [
+
+  ]
+end
 to go
   ;;output-print ticks
   ask horses [move-forward]
@@ -320,9 +333,9 @@ ENVIRONMENT SETUP\n1. Enter length of race\n2. Enter number of horses
 
 BUTTON
 56
-316
+366
 136
-388
+438
 NIL
 setup
 NIL
@@ -359,9 +372,9 @@ Number
 
 BUTTON
 58
-406
+456
 137
-471
+521
 go
 go\n
 T
@@ -382,7 +395,22 @@ CHOOSER
 LENGTH_RACE
 LENGTH_RACE
 5.5 8 6
+0
+
+SLIDER
+14
+316
+186
+350
+BOOST
+BOOST
+0
+5
+5.0
 1
+1
+mph
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
