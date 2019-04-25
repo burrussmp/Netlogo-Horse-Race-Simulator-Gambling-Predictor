@@ -1,6 +1,6 @@
 breed [horses horse]
 breed [stats stat]
-stats-own [name places shows thirds]
+stats-own [name place shows exacta]
 horses-own [name avg_speed std_speed horse_wps_ratio jockey_wps_ratio gate_position curspeed curaccel distancetravelled laps_completed prevX prevY place] ;; has default parameters xcor, ycor, and heading
 globals [params
   count_finished
@@ -80,18 +80,6 @@ to setup-horses
       ]
      set curaccel 20000 ;; miles/hour^2
     ]
-
-    ;; set up stats but only on first trial
-    if (total_runs = 1)
-    [
-      create-stats 1 [
-        set name m_name
-        set places 0
-        set shows 0
-        set thirds 0
-      ]
-    ]
-
     set horse_idx horse_idx + 1
   ]
 end
@@ -204,7 +192,7 @@ to setup-patches
     ]
   ]
   [
-   let y -39
+   let y -38
    while[y < -34][
      ask patch finish_x y [set pcolor white]
      set y y + 1
@@ -220,6 +208,7 @@ to setup
   set count_finished 1
   setup-horses
   setup-patches
+
   reset-ticks
   reset-timer
 end
@@ -296,22 +285,10 @@ to finished?
     if (ycor < -24 and prevX >= finish_x and xcor <= finish_x)[set laps_completed laps_completed + 1]
   ]
   if (laps_completed > laps_needed) [
-
-    if (count_finished = 1)
-    [
-      ask stats with [name = ([name] of myself)][set places (places + 1)]
-    ]
-    if (count_finished = 2)
-    [
-      ask stats with [name = ([name] of myself)][set shows (shows + 1)]
-    ]
-    if (count_finished = 3)
-    [
-      ask stats with [name = ([name] of myself)][set thirds (thirds + 1)]
-    ]
-
+    set place count_finished
     set count_finished (count_finished + 1)
-    die
+    print_avg_place
+    hide-turtle
   ]
 end
 
@@ -346,7 +323,7 @@ to resolve-conflicts
 end
 
 to print_avg_place
-  output-show ( places / total_runs )
+  output-show ( place / total_runs )
 end
 
 to go
@@ -356,8 +333,7 @@ to go
   tick-advance timestep
   if (all? horses [laps_completed > laps_needed])
   [
-    rerun
-    ask stats [print_avg_place]
+   rerun
   ]
 end
 @#$#@#$#@
@@ -472,7 +448,7 @@ CHOOSER
 LENGTH_RACE
 LENGTH_RACE
 5.5 8 6
-0
+1
 
 SLIDER
 14
