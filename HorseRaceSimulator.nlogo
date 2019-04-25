@@ -173,7 +173,22 @@ to setup-patches
     set j2 j2 + 1
     set i i + 1
   ]
-
+  ;; draw finish line
+  ifelse (finish_y_high_or_low? = "high")
+  [
+    let y -18
+    while[y < -4][
+      ask patch finish_x y [set pcolor white]
+      set y y + 1
+    ]
+  ]
+  [
+   let y -48
+   while[y < -34][
+     ask patch finish_x y [set pcolor white]
+     set y y + 1
+   ]
+  ]
 
 end
 
@@ -259,8 +274,8 @@ end
 GRAPHICS-WINDOW
 200
 10
-1261
-734
+1268
+742
 -1
 -1
 13.0
@@ -297,7 +312,7 @@ TEXTBOX
 25
 19
 175
-128
+151
 ENVIRONMENT SETUP\n1. Enter length of race\n2. Enter number of horses
 15
 0.0
@@ -305,9 +320,9 @@ ENVIRONMENT SETUP\n1. Enter length of race\n2. Enter number of horses
 
 BUTTON
 56
-268
+316
 136
-340
+388
 NIL
 setup
 NIL
@@ -332,10 +347,10 @@ NAME: horse1_name,horse2_name,horse3_name,horse4_name,horse5,\nSPEED AVG: 35.321
 String
 
 INPUTBOX
-13
-184
-187
-259
+14
+232
+188
+307
 NUMBER_OF_HORSES
 5.0
 1
@@ -343,10 +358,10 @@ NUMBER_OF_HORSES
 Number
 
 BUTTON
-57
-357
-136
-422
+58
+406
+137
+471
 go
 go\n
 T
@@ -360,14 +375,14 @@ NIL
 0
 
 CHOOSER
-29
-125
-167
-170
+30
+174
+168
+219
 LENGTH_RACE
 LENGTH_RACE
 5.5 8 6
-2
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
