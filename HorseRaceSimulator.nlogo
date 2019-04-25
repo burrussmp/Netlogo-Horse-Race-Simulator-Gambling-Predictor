@@ -1,8 +1,7 @@
 breed [horses horse]
-horses-own [name avg_speed std_speed horse_wps_ratio jockey_wps_ratio gate_position curspeed curaccel distancetravelled laps_completed prevX prevY place] ;; has default parameters xcor, ycor, and heading
+horses-own [name avg_speed std_speed horse_wps_ratio jockey_wps_ratio gate_position curspeed curaccel distancetravelled laps_completed prevX prevY] ;; has default parameters xcor, ycor, and heading
+
 globals [params
-  count_finished
-  total_runs
   timestep
   laps_needed
   finish_x
@@ -24,7 +23,7 @@ to setup-horses
     x -> parse x horseIndex
     set horseIndex horseIndex + 1
   ]
-  ;;output-print params
+  output-print params
   let horse_idx 0
   while [horse_idx < NUMBER_OF_HORSES]
   [
@@ -202,8 +201,6 @@ end
 
 to setup
   clear-all
-  set total_runs 1
-  set count_finished 1
   setup-horses
   setup-patches
 
@@ -211,33 +208,25 @@ to setup
   reset-timer
 end
 
-to rerun
-  set total_runs (total_runs + 1)
-  set count_finished 1
-  setup-horses
-  reset-ticks
-  reset-timer
-end
-
 to update-heading
   ;; get general sense of direction
   ;output-print ycor
-  ifelse (xcor >= 19 and xcor <= 60)
+  ifelse (xcor >= 20 and xcor <= 60)
   [
-    ifelse (ycor <= -22) [ set heading towardsxy 20 -34.5 ];; # bottom straight
-      [ set heading towardsxy 60 -18.5  ];; # upper straight
+    ifelse (ycor <= -22) [ set heading towardsxy 20 -34 ];; # bottom straight
+      [ set heading towardsxy 60 -19  ];; # upper straight
   ]
   [
     ifelse (xcor < 20)
     [
-     if(ycor >= -49 and ycor < -31) [ set heading towardsxy 16.5 -31 ] ;; bottom left
-     if(ycor >= -31 and ycor < -22) [ set heading towardsxy 16.5 -22] ;; left
-     if(ycor >= -21 and ycor < -4 ) [ set heading towardsxy 19.5 -19 ]  ;; upper left
+     if(ycor >= -49 and ycor < -31) [ set heading towardsxy 17 -31 ] ;; bottom left
+     if(ycor >= -31 and ycor < -22) [ set heading towardsxy 17 -22] ;; left
+     if(ycor >= -22 and ycor < -4 ) [ set heading towardsxy 20 -19 ]  ;; upper left
     ]
     [
-     if(ycor >= -49 and ycor < -31) [ set heading towardsxy 60 -35.5 ] ;; bottom right
-     if(ycor >= -31 and ycor < -1) [ set heading towardsxy 63 -31.5 ] ;; right
-     if(ycor >= -1 and ycor < -4 ) [ set heading towardsxy 63 -21.5  ] ;; upper right
+     if(ycor >= -49 and ycor < -31) [ set heading towardsxy 60 -34 ] ;; bottom right
+     if(ycor >= -31 and ycor < -22) [ set heading towardsxy 63 -31 ] ;; right
+     if(ycor >= -22 and ycor < -4 ) [ set heading towardsxy 63 -22  ] ;; upper right
     ]
   ]
   ;; looks at the 8 patches around the turtle
@@ -283,11 +272,8 @@ to finished?
     if (ycor < -24 and prevX >= finish_x and xcor <= finish_x)[set laps_completed laps_completed + 1]
   ]
   if (laps_completed > laps_needed) [
-    set place count_finished
-    set count_finished (count_finished + 1)
-    print_avg_place
-    hide-turtle
-  ]
+  output-print distancetravelled
+  die]
 end
 
 to-report bernoulli [p]
@@ -319,27 +305,18 @@ to resolve-conflicts
     ]
   ]
 end
-
-to print_avg_place
-  output-show ( place / total_runs )
-end
-
 to go
   ;;output-print ticks
-  ask horses with [laps_completed <= laps_needed][move-forward]
-  ask horses with [laps_completed <= laps_needed][finished?]
+  ask horses [move-forward]
+  ask horses [finished?]
   tick-advance timestep
-  if (all? horses [laps_completed > laps_needed])
-  [
-   rerun
-  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
 200
 10
-1261
-734
+1268
+742
 -1
 -1
 13.0
@@ -402,10 +379,10 @@ NIL
 INPUTBOX
 1294
 264
-1904
-557
+2173
+654
 AGENT_PARAMETERS
-0
+NAME: horse1_name,horse2_name,horse3_name,horse4_name,horse5,\nSPEED AVG: 35.321,34.3214,35.3424,34.323,33,\nSPEED STD: 1.232,1.231,0.4321,3.2314,1.2,\nWPS RATIO HORSE: 0.342,0.343,0.231,0.14321,0.432,\nWPS RATIO JOCKEY: 0.3242,0.432,0.4321,0.1342,0.4320,\nGATE POSITION: 3,4,1,2,5,\n
 1
 1
 String
@@ -452,7 +429,7 @@ SLIDER
 14
 316
 186
-349
+350
 BOOST
 BOOST
 0
@@ -462,13 +439,6 @@ BOOST
 1
 mph
 HORIZONTAL
-
-OUTPUT
-1320
-579
-1866
-701
-11
 
 @#$#@#$#@
 ## WHAT IS IT?
