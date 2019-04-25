@@ -1,8 +1,11 @@
 breed [horses horse]
-horses-own [name avg_speed std_speed horse_wps_ratio jockey_wps_ratio gate_position curspeed curaccel distancetravelled] ;; has default parameters xcor, ycor, and heading
+horses-own [name avg_speed std_speed horse_wps_ratio jockey_wps_ratio gate_position curspeed curaccel distancetravelled laps_completed prevX prevY] ;; has default parameters xcor, ycor, and heading
 globals [params
-         timestep
-        ]
+  timestep
+  laps_needed
+  finish_x
+  finish_y_high_or_low?
+  ]
 
 to setup-horses
   set-default-shape horses "horse" ;; set the shape of the agents
@@ -37,8 +40,35 @@ to setup-horses
      set gate_position read-from-string m_gate_position
      set heading 90
      set size 3
-     setxy 20 (-18 + gate_position)
-     ;set xcor 20
+     ;; parse length
+     let start 0
+     ifelse (LENGTH_RACE = 5.5)[
+        set start 20
+        set laps_needed 1
+        set finish_x 23.232852774
+        set finish_y_high_or_low? "high"
+      ]
+     [
+      ifelse (LENGTH_RACE = 8)[
+          set start 40
+          set laps_needed 1
+          set finish_x 39.6116208
+          set finish_y_high_or_low? "low"
+        ]
+      [
+       ifelse (LENGTH_RACE = 6)[
+          set start 40
+          set laps_needed 1
+          set finish_x 54.15465269
+          set finish_y_high_or_low? "high"
+          ]
+       [
+         error "Shouldn't see message"
+       ]
+      ]
+     ]
+     set laps_completed 0
+     setxy start (-19 + (gate_position * .1993103156)) ; there are .1993103156 for 6 feet (width)
      set curspeed 0
      set curaccel 20000 ;; miles/hour^2
     ]
@@ -190,6 +220,8 @@ end
 
 ; horse procedure; accelerate
 to move-forward
+   set prevX xcor
+   set prevY ycor
    update-heading
    let prevspeed curspeed
    ifelse (abs (curspeed - avg_speed) < std_speed * 2 or (curspeed - avg_speed) > 3 * std_speed) ;; if we are within 2 standard deviations of the speed, randomly decide speed
@@ -203,16 +235,31 @@ to move-forward
   fd ((prevspeed * (timestep / 3600) ) + (0.5 * curaccel * ( (timestep / 3600) ^ 2 ))) * 174.72871
 end
 
+; see if a horse is finished
+to finished?
+  ifelse (finish_y_high_or_low? = "high")
+  [
+    if (ycor > -24 and prevX <= finish_x and xcor >= finish_x)[set laps_completed laps_completed + 1]
+  ]
+  [
+    if (ycor < -24 and prevX >= finish_x and xcor <= finish_x)[set laps_completed laps_completed + 1]
+  ]
+  if (laps_completed > laps_needed) [
+  output-print distancetravelled
+  die]
+end
+
 to go
   ;;output-print ticks
   ask horses [move-forward]
+  ask horses [finished?]
   tick-advance timestep
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
 200
 10
-1257
+1261
 734
 -1
 -1
@@ -256,26 +303,11 @@ ENVIRONMENT SETUP\n1. Enter length of race\n2. Enter number of horses
 0.0
 1
 
-SLIDER
-12
-147
-176
-181
-LENGTH
-LENGTH
-5.5
-12
-8.0
-0.5
-1
-furlongs
-HORIZONTAL
-
 BUTTON
-59
-355
-139
-427
+56
+268
+136
+340
 NIL
 setup
 NIL
@@ -300,36 +332,21 @@ NAME: horse1_name,horse2_name,horse3_name,horse4_name,horse5,\nSPEED AVG: 35.321
 String
 
 INPUTBOX
-12
-227
-186
-302
+13
+184
+187
+259
 NUMBER_OF_HORSES
 5.0
 1
 0
 Number
 
-SLIDER
-10
-185
-175
-219
-RUNUP
-RUNUP
-0
-0.05
-0.04
-0.01
-1
-miles
-HORIZONTAL
-
 BUTTON
-60
-444
-139
-509
+57
+357
+136
+422
 go
 go\n
 T
@@ -341,6 +358,16 @@ NIL
 NIL
 NIL
 0
+
+CHOOSER
+29
+125
+167
+170
+LENGTH_RACE
+LENGTH_RACE
+5.5 8 6
+2
 
 @#$#@#$#@
 ## WHAT IS IT?
