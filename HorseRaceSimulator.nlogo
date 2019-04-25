@@ -1,5 +1,6 @@
 breed [horses horse]
 horses-own [name avg_speed std_speed horse_wps_ratio jockey_wps_ratio gate_position curspeed curaccel distancetravelled laps_completed prevX prevY] ;; has default parameters xcor, ycor, and heading
+
 globals [params
   timestep
   laps_needed
@@ -68,7 +69,7 @@ to setup-horses
       ]
      ]
      set laps_completed 0
-     setxy start (-19 + (gate_position * 0.1985553523)) ; there are 0.1985553523for 6 feet (width)
+     setxy start (-19 + (gate_position * 0.3309255871)) ; there are 0.1985553523for 10 feet (width)
      ;; set curspeed based on a boost
      if (bernoulli horse_wps_ratio)[
        set curspeed BOOST
@@ -103,6 +104,7 @@ to parse [x index]
     error insert-item 14 "INVALID INPUT Too few/many parameters: " x
   ]
 end
+
 
 to setup-patches
   let track_straight_length 40
@@ -200,28 +202,30 @@ to setup
   clear-all
   setup-horses
   setup-patches
+
   reset-ticks
   reset-timer
 end
 
 to update-heading
   ;; get general sense of direction
-  ifelse (xcor >= 20 and xcor <= 60)
+  ;output-print ycor
+  ifelse (xcor >= 19 and xcor <= 60)
   [
-    ifelse (ycor <= -22) [ set heading 270 ];; #1
-      [ set heading 90  ];; #2
+    ifelse (ycor <= -22) [ set heading towardsxy 20 -34.5 ];; # bottom straight
+      [ set heading towardsxy 60 -18.5  ];; # upper straight
   ]
   [
     ifelse (xcor < 20)
     [
-     if(ycor >= -49 and ycor < -33) [ set heading 315 ]
-     if(ycor >= -33 and ycor < -22) [ set heading 0 ]
-     if(ycor >= -22 and ycor < -4 ) [ set heading 45 ]
+     if(ycor >= -49 and ycor < -31) [ set heading towardsxy 16.5 -31 ] ;; bottom left
+     if(ycor >= -31 and ycor < -22) [ set heading towardsxy 16.5 -22] ;; left
+     if(ycor >= -21 and ycor < -4 ) [ set heading towardsxy 19.5 -19 ]  ;; upper left
     ]
     [
-     if(ycor >= -49 and ycor < -33) [ set heading 225 ]
-     if(ycor >= -33 and ycor < -22) [ set heading 180 ]
-     if(ycor >= -22 and ycor < -4 ) [ set heading 135  ]
+     if(ycor >= -49 and ycor < -31) [ set heading towardsxy 60 -35.5 ] ;; bottom right
+     if(ycor >= -31 and ycor < -1) [ set heading towardsxy 63 -31.5 ] ;; right
+     if(ycor >= -1 and ycor < -4 ) [ set heading towardsxy 63 -21.5  ] ;; upper right
     ]
   ]
   ;; looks at the 8 patches around the turtle
@@ -275,25 +279,27 @@ to-report bernoulli [p]
   report ((random-float 1) < p )
 end
 
-to compete
+to resolve-conflicts
   ask horses in-radius 0.1985553523 ;; ask horses that are within 6 ft of this horse
   [
-    ifelse (xcor >= 20 and xcor <= 60)
-    [
-      ifelse (ycor <= -22) [ set heading 270 ];; #1
-      [ set heading 90  ];; #2
-    ]
-    [
-      ifelse (xcor < 20)
+    if(xcor != [xcor] of myself and ycor != [ycor] of myself)[
+      ifelse (prevX >= 20 and prevX <= 60)
       [
-        if(ycor >= -49 and ycor < -33) [ set heading 315 ]
-        if(ycor >= -33 and ycor < -22) [ set heading 0 ]
-        if(ycor >= -22 and ycor < -4 ) [ set heading 45 ]
+        ifelse (prevY <= -22) [ set heading 270 ];; #1
+        [ set heading 90  ];; #2
       ]
       [
-        if(ycor >= -49 and ycor < -33) [ set heading 225 ]
-        if(ycor >= -33 and ycor < -22) [ set heading 180 ]
-        if(ycor >= -22 and ycor < -4 ) [ set heading 135  ]
+        ifelse (prevX < 20)
+        [
+          if(prevY >= -49 and prevY < -33) [ set heading 315 ]
+          if(prevY >= -33 and prevY < -22) [ set heading 0 ]
+          if(prevY >= -22 and prevY < -4 ) [ set heading 45 ]
+        ]
+        [
+          if(prevY >= -49 and prevY < -34) [ set heading 225 ]
+          if(prevY >= -34 and prevY < -22) [ set heading 180 ]
+          if(prevY >= -22 and prevY < -4 ) [ set heading 135  ]
+        ]
       ]
     ]
   ]
