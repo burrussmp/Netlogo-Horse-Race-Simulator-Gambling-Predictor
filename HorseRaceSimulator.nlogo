@@ -232,14 +232,6 @@ to rerun
   reset-timer
 end
 
-to rerun
-  set total_runs (total_runs + 1)
-  set count_finished 1
-  setup-horses
-  reset-ticks
-  reset-timer
-end
-
 to update-heading
   ;; get general sense of direction
   ;output-print ycor
@@ -354,7 +346,7 @@ to resolve-conflicts
 end
 
 to print_avg_place
-  output-show ( place / total_runs )
+  output-show ( places / total_runs )
 end
 
 to go
@@ -364,7 +356,8 @@ to go
   tick-advance timestep
   if (all? horses [laps_completed > laps_needed])
   [
-   rerun
+    rerun
+    ask stats [print_avg_place]
   ]
 end
 @#$#@#$#@
