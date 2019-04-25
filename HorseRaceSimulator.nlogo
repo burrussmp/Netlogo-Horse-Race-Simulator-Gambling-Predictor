@@ -8,6 +8,7 @@ globals [params
   finish_x
   finish_y_high_or_low?
   ]
+;; tmp
 
 to setup-horses
   set-default-shape horses "horse" ;; set the shape of the agents
@@ -415,7 +416,7 @@ INPUTBOX
 188
 307
 NUMBER_OF_HORSES
-12.0
+5.0
 1
 0
 Number
