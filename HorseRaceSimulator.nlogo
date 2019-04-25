@@ -1,6 +1,8 @@
 breed [horses horse]
-horses-own [name avg_speed std_speed horse_wps_ratio jockey_wps_ratio gate_position curspeed curaccel distancetravelled laps_completed prevX prevY] ;; has default parameters xcor, ycor, and heading
+horses-own [name avg_speed std_speed horse_wps_ratio jockey_wps_ratio gate_position curspeed curaccel distancetravelled laps_completed prevX prevY place] ;; has default parameters xcor, ycor, and heading
 globals [params
+  count_finished
+  total_runs
   timestep
   laps_needed
   finish_x
@@ -21,7 +23,7 @@ to setup-horses
     x -> parse x horseIndex
     set horseIndex horseIndex + 1
   ]
-  output-print params
+  ;;output-print params
   let horse_idx 0
   while [horse_idx < NUMBER_OF_HORSES]
   [
@@ -198,8 +200,18 @@ end
 
 to setup
   clear-all
+  set total_runs 1
+  set count_finished 1
   setup-horses
   setup-patches
+  reset-ticks
+  reset-timer
+end
+
+to rerun
+  set total_runs (total_runs + 1)
+  set count_finished 1
+  setup-horses
   reset-ticks
   reset-timer
 end
@@ -267,8 +279,11 @@ to finished?
     if (ycor < -24 and prevX >= finish_x and xcor <= finish_x)[set laps_completed laps_completed + 1]
   ]
   if (laps_completed > laps_needed) [
-  output-print distancetravelled
-  die]
+    set place count_finished
+    set count_finished (count_finished + 1)
+    print_avg_place
+    hide-turtle
+  ]
 end
 
 to-report bernoulli [p]
@@ -298,18 +313,27 @@ to compete
     ]
   ]
 end
+
+to print_avg_place
+  output-show ( place / total_runs )
+end
+
 to go
   ;;output-print ticks
-  ask horses [move-forward]
-  ask horses [finished?]
+  ask horses with [laps_completed <= laps_needed][move-forward]
+  ask horses with [laps_completed <= laps_needed][finished?]
   tick-advance timestep
+  if (all? horses [laps_completed > laps_needed])
+  [
+   rerun
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
 200
 10
-1268
-742
+1261
+734
 -1
 -1
 13.0
@@ -372,8 +396,8 @@ NIL
 INPUTBOX
 1294
 264
-2173
-654
+1904
+557
 AGENT_PARAMETERS
 NAME: horse1_name,horse2_name,horse3_name,horse4_name,horse5,\nSPEED AVG: 35.321,34.3214,35.3424,34.323,33,\nSPEED STD: 1.232,1.231,0.4321,3.2314,1.2,\nWPS RATIO HORSE: 0.342,0.343,0.231,0.14321,0.432,\nWPS RATIO JOCKEY: 0.3242,0.432,0.4321,0.1342,0.4320,\nGATE POSITION: 3,4,1,2,5,\n
 1
@@ -422,7 +446,7 @@ SLIDER
 14
 316
 186
-350
+349
 BOOST
 BOOST
 0
@@ -432,6 +456,13 @@ BOOST
 1
 mph
 HORIZONTAL
+
+OUTPUT
+1320
+579
+1866
+701
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
