@@ -249,6 +249,10 @@ to move-forward
     [
       set curspeed (curspeed + curaccel * (timestep / 3600 ))
     ]
+  ;; boost the horse if they win the bernoulli trial
+  if (bernoulli horse_wps_ratio)[
+    set curspeed curspeed + random-normal 0 .5
+  ]
   set distancetravelled distancetravelled + (prevspeed * (timestep / 3600) ) + (0.5 * curaccel * ( (timestep / 3600) ^ 2 ))
   fd ((prevspeed * (timestep / 3600) ) + (0.5 * curaccel * ( (timestep / 3600) ^ 2 ))) * 174.72871
 end
@@ -274,7 +278,24 @@ end
 to compete
   ask horses in-radius 0.1985553523 ;; ask horses that are within 6 ft of this horse
   [
-
+    ifelse (xcor >= 20 and xcor <= 60)
+    [
+      ifelse (ycor <= -22) [ set heading 270 ];; #1
+      [ set heading 90  ];; #2
+    ]
+    [
+      ifelse (xcor < 20)
+      [
+        if(ycor >= -49 and ycor < -33) [ set heading 315 ]
+        if(ycor >= -33 and ycor < -22) [ set heading 0 ]
+        if(ycor >= -22 and ycor < -4 ) [ set heading 45 ]
+      ]
+      [
+        if(ycor >= -49 and ycor < -33) [ set heading 225 ]
+        if(ycor >= -33 and ycor < -22) [ set heading 180 ]
+        if(ycor >= -22 and ycor < -4 ) [ set heading 135  ]
+      ]
+    ]
   ]
 end
 to go
