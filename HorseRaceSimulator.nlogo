@@ -7,6 +7,7 @@ globals [params
   finish_x
   finish_y_high_or_low?
   ]
+;; tmp
 
 to setup-horses
   set-default-shape horses "horse" ;; set the shape of the agents
