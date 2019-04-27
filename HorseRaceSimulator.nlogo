@@ -1,7 +1,10 @@
 breed [horses horse]
 breed [stats stat]
 stats-own [name places shows thirds]
-horses-own [name avg_speed std_speed horse_wps_ratio jockey_wps_ratio gate_position curspeed curaccel distancetravelled laps_completed prevX prevY place] ;; has default parameters xcor, ycor, and heading
+horses-own [name avg_speed std_speed horse_wps_ratio jockey_wps_ratio gate_position
+  curspeed curaccel distancetravelled laps_completed
+  prevX prevY point_heading] ;; has default parameters xcor, ycor, and heading
+                             ;; NOTE: point_heading [0-7 going clockwise around the track]
 globals [params
   count_finished
   total_runs
@@ -9,6 +12,8 @@ globals [params
   laps_needed
   finish_x
   finish_y_high_or_low?
+  min_dist
+  is_start
   ]
 ;; tmp
 
@@ -73,7 +78,7 @@ to setup-horses
       ]
      ]
      set laps_completed 0
-     setxy start (-19 + (gate_position * 0.2647404697)) ; there are 0.2647404697 for 8 feet (width)
+     setxy start (-19 + (gate_position * 0.4)) ; there are 0.2647404697 for 8 feet (width)
      ;; set curspeed based on a boost
      if (bernoulli horse_wps_ratio)[
        set curspeed BOOST
@@ -218,6 +223,8 @@ to setup
   clear-all
   set total_runs 1
   set count_finished 1
+  set min_dist 0.1985554
+  set is_start true
   setup-horses
   setup-patches
   reset-ticks
@@ -237,30 +244,51 @@ to update-heading
   ;output-print ycor
   ifelse (xcor >= 20 and xcor <= 60)
   [
-    ifelse (ycor <= -22) [ set heading towardsxy 20 -34 ];; # bottom straight
-      [ set heading towardsxy 60 -19  ];; # upper straight
+    ifelse (ycor <= -22)
+    [
+      set heading towardsxy 20 -34
+      set point_heading 4
+    ];; # bottom straight
+    [
+      set heading towardsxy 60 -19
+      set point_heading 0
+    ];; # upper straight
   ]
   [
     ifelse (xcor < 20)
     [
-     if(ycor >= -49 and ycor < -31) [ set heading towardsxy 17 -31 ] ;; bottom left
-     if(ycor >= -31 and ycor < -22) [ set heading towardsxy 17 -22] ;; left
-     if(ycor >= -22 and ycor < -4 ) [ set heading towardsxy 20 -19 ]  ;; upper left
+      if(ycor >= -49 and ycor < -31)
+      [
+        set heading towardsxy 17 -31
+        set point_heading 5
+      ] ;; bottom left
+      if(ycor >= -31 and ycor < -22)
+      [
+        set heading towardsxy 17 -22
+        set point_heading 6
+      ] ;; left
+      if(ycor >= -22 and ycor < -4 )
+      [
+        set heading towardsxy 20 -19
+        set point_heading 7
+      ]  ;; upper left
     ]
     [
-     if(ycor >= -49 and ycor < -31) [ set heading towardsxy 60 -34 ] ;; bottom right
-     if(ycor >= -31 and ycor < -22) [ set heading towardsxy 63 -31 ] ;; right
-     if(ycor >= -22 and ycor < -4 ) [ set heading towardsxy 63 -22  ] ;; upper right
-    ]
-  ]
-  ;; looks at the 8 patches around the turtle
-  ask neighbors [
-     if (pcolor = brown)[
-      ;; probably something to do with myself
-     ]
-     ask turtles-here [
-      ;;show name
-       ;;output-print distance myself ;; outputs distance to turtles on this specific patch
+      if(ycor >= -49 and ycor < -31)
+      [
+        set heading towardsxy 60 -34
+        set point_heading 3
+      ] ;; bottom right
+      if(ycor >= -31 and ycor < -22)
+      [
+        set heading towardsxy 63 -31
+        set point_heading 2
+      ] ;; right
+      if(ycor >= -22 and ycor < -4 )
+      [
+        set heading towardsxy 63 -22
+        set point_heading 1
+      ] ;; upper right
     ]
   ]
 end
@@ -282,9 +310,196 @@ to move-forward
   if (bernoulli horse_wps_ratio)[
     set curspeed curspeed + random-normal 0 .5
   ]
+
+  ;; Resolve conflicts with horses hitting each other
+  ;; Booleans for checking where horses are
+  if (not is_start)
+  [
+    print "inside"
+    let in_front false
+    let speed_in_front 0
+    let on_left false
+    let on_right false
+    ;; find location of too close horses
+    ask horses with [point_heading = ([point_heading] of myself)] in-radius min_dist
+    [ ;; same point heading within radius
+      print self
+      if (self != myself)
+      [ ;; check to make sure its not us
+        ;; find where the horse is and mark appropriately
+        if (is_front? point_heading)
+        [
+          output-show "in front"
+          set in_front true
+          ;; mark speed
+          set speed_in_front curspeed
+        ]
+        ;;if (is_left? point_heading)
+        ;;[
+        ;;  set on_left true
+        ;;]
+        ;;if (is_right? point_heading)
+        ;;[
+        ;;  set on_right true
+        ;;]
+      ]
+    ]
+
+    ;; Take action for myself based on surrounding horses
+    ifelse (in_front and on_left)
+    [
+      set curspeed (min list curspeed speed_in_front)
+    ]
+    [
+      ifelse(in_front and (curspeed >= speed_in_front) )
+      [
+        ;; we can pass them so test to see if we will
+        ifelse(bernoulli jockey_wps_ratio)
+        [
+          ;; now shift to the left based on my section and boost tf up
+          ;;shift_left
+          set curspeed curspeed + random-normal 0 1
+        ]
+        [
+          ;; we failed the trial so slow down
+          set curspeed (min list curspeed speed_in_front)
+        ]
+      ]
+      [
+        ;; we cannot pass them so slow down
+        set curspeed (min list curspeed speed_in_front)
+      ]
+    ]
+    if (on_right)
+    [
+      ;; shift left based on my section of the track
+      ;;shift_left
+    ]
+  ]
   set distancetravelled distancetravelled + (prevspeed * (timestep / 3600) ) + (0.5 * curaccel * ( (timestep / 3600) ^ 2 ))
   fd ((prevspeed * (timestep / 3600) ) + (0.5 * curaccel * ( (timestep / 3600) ^ 2 ))) * 174.72871
 end
+
+
+;; used to shift a horse to the outside based on its location in the track
+to shift_left
+  ;; pythagorean math
+  let shift (min_dist / sqrt(2))
+
+  if (point_heading = 0)
+  [ ;; top - increase ycor
+    set ycor (ycor + min_dist)
+  ]
+  if (point_heading = 1)
+  [ ;; top right - increase ycor, increase xcor
+    set ycor (ycor + shift)
+    set xcor (xcor + shift)
+  ]
+  if (point_heading = 2)
+  [ ;; right - increase xcor
+    set xcor (xcor + min_dist)
+  ]
+  if (point_heading = 3)
+  [ ;; bottom right - decrease ycor, increase xcor
+    set ycor (ycor - shift)
+    set xcor (xcor + shift)
+  ]
+  if (point_heading = 4)
+  [ ;; bottom - decrease ycor
+    set ycor (ycor - min_dist)
+  ]
+  if (point_heading = 5)
+  [ ;; bottom left - decrease ycor, decrease xcor
+    set ycor (ycor - shift)
+    set xcor (xcor - shift)
+  ]
+  if (point_heading = 6)
+  [ ;; left - decrease xcor
+    set xcor (xcor - min_dist)
+  ]
+  if (point_heading = 7)
+  [ ;; top left - increase ycor, decrease xcor
+    set ycor (ycor + shift)
+    set xcor (xcor - shift)
+  ]
+end
+
+
+;; returns if there is a horse on our right (self - horse, myself - me)
+to-report is_front? [point]
+  let x ([xcor] of myself)
+  let y ([ycor] of myself)
+  let head ([heading] of myself)
+
+  let dist_x (xcor - x)
+  let dist_y (ycor - y)
+
+  let theta (atan dist_x dist_y)
+  let angle 0
+
+  ifelse(head > theta)
+  [
+    set angle (min list (head - theta) (360 + (theta - head)))
+  ]
+  [
+    set angle (min list (theta - head) (360 + (head - theta)))
+  ]
+
+  output-print angle
+  report (angle <= 20)
+end
+
+
+to-report is_right? [point]
+  let x ([xcor] of myself)
+  let y ([ycor] of myself)
+  let head ([heading] of myself)
+
+  let dist_x (xcor - x)
+  let dist_y (ycor - y)
+
+  let theta (atan dist_x dist_y)
+  let angle 0
+
+  ifelse(head > theta)
+  [
+    set angle (min list (head - theta) (360 + (theta - head)))
+  ]
+  [
+    set angle (min list (theta - head) (360 + (head - theta)))
+  ]
+
+  ;; figure out who's in front
+
+  report (angle > 20 and angle <= 90)
+end
+
+
+to-report is_left? [point]
+  let x ([xcor] of myself)
+  let y ([ycor] of myself)
+  let head ([heading] of myself)
+
+  let dist_x (xcor - x)
+  let dist_y (ycor - y)
+
+  let theta (atan dist_x dist_y)
+  let angle 0
+
+  ifelse(head > theta)
+  [
+    set angle (min list (head - theta) (360 + (theta - head)))
+  ]
+  [
+    set angle (min list (theta - head) (360 + (head - theta)))
+  ]
+
+  ;; figure out who's in front
+
+
+  report (angle > 20 and angle <= 90)
+end
+
 
 ; see if a horse is finished
 to finished?
@@ -319,31 +534,6 @@ to-report bernoulli [p]
   report ((random-float 1) < p )
 end
 
-to resolve-conflicts
-  ask horses in-radius 0.1985553523 ;; ask horses that are within 6 ft of this horse
-  [
-    if(xcor != [xcor] of myself and ycor != [ycor] of myself)[
-      ifelse (prevX >= 20 and prevX <= 60)
-      [
-        ifelse (prevY <= -22) [ set heading 270 ];; #1
-        [ set heading 90  ];; #2
-      ]
-      [
-        ifelse (prevX < 20)
-        [
-          if(prevY >= -49 and prevY < -33) [ set heading 315 ]
-          if(prevY >= -33 and prevY < -22) [ set heading 0 ]
-          if(prevY >= -22 and prevY < -4 ) [ set heading 45 ]
-        ]
-        [
-          if(prevY >= -49 and prevY < -34) [ set heading 225 ]
-          if(prevY >= -34 and prevY < -22) [ set heading 180 ]
-          if(prevY >= -22 and prevY < -4 ) [ set heading 135  ]
-        ]
-      ]
-    ]
-  ]
-end
 
 to print_avg_place
   output-show ( places / total_runs )
@@ -354,10 +544,18 @@ to go
   ask horses with [laps_completed <= laps_needed][move-forward]
   ask horses with [laps_completed <= laps_needed][finished?]
   tick-advance timestep
-  if (all? horses [laps_completed > laps_needed])
+  if (all? horses [laps_completed > laps_needed]) and (total_runs < 1000)
   [
     rerun
-    ask stats [print_avg_place]
+  ]
+  if (total_runs >= 1000)
+  [
+    foreach sort-on [places] stats
+    [print_avg_place] ;; FIXME this needs to properly output the stuff
+  ]
+  if (ticks > 5)
+  [
+    set is_start false
   ]
 end
 @#$#@#$#@
