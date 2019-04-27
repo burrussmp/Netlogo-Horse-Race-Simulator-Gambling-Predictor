@@ -78,7 +78,7 @@ to setup-horses
       ]
      ]
      set laps_completed 0
-     setxy start (-19 + (gate_position * 0.4)) ; there are 0.2647404697 for 8 feet (width)
+     setxy (start + .01) (-19 + (gate_position * 0.2647404697)) ; there are 0.2647404697 for 8 feet (width)
      ;; set curspeed based on a boost
      if (bernoulli horse_wps_ratio)[
        set curspeed BOOST
@@ -315,33 +315,31 @@ to move-forward
   ;; Booleans for checking where horses are
   if (not is_start)
   [
-    print "inside"
     let in_front false
-    let speed_in_front 0
+    let speed_in_front curspeed
     let on_left false
     let on_right false
     ;; find location of too close horses
     ask horses with [point_heading = ([point_heading] of myself)] in-radius min_dist
     [ ;; same point heading within radius
-      print self
       if (self != myself)
       [ ;; check to make sure its not us
         ;; find where the horse is and mark appropriately
-        if (is_front? point_heading)
+        ifelse(is_front? point_heading)
         [
-          output-show "in front"
           set in_front true
           ;; mark speed
           set speed_in_front curspeed
         ]
-        ;;if (is_left? point_heading)
-        ;;[
-        ;;  set on_left true
-        ;;]
-        ;;if (is_right? point_heading)
-        ;;[
-        ;;  set on_right true
-        ;;]
+        [
+          ifelse (is_left? point_heading)
+          [
+            set on_left true
+          ]
+          [
+            set on_right true
+          ]
+        ]
       ]
     ]
 
@@ -373,9 +371,10 @@ to move-forward
     if (on_right)
     [
       ;; shift left based on my section of the track
-      ;;shift_left
+      shift_left
     ]
   ]
+
   set distancetravelled distancetravelled + (prevspeed * (timestep / 3600) ) + (0.5 * curaccel * ( (timestep / 3600) ^ 2 ))
   fd ((prevspeed * (timestep / 3600) ) + (0.5 * curaccel * ( (timestep / 3600) ^ 2 ))) * 174.72871
 end
@@ -384,11 +383,11 @@ end
 ;; used to shift a horse to the outside based on its location in the track
 to shift_left
   ;; pythagorean math
-  let shift (min_dist / sqrt(2))
+  let shift ( (min_dist + .1) / sqrt(2))
 
   if (point_heading = 0)
   [ ;; top - increase ycor
-    set ycor (ycor + min_dist)
+    set ycor (ycor + min_dist + .1)
   ]
   if (point_heading = 1)
   [ ;; top right - increase ycor, increase xcor
@@ -397,7 +396,7 @@ to shift_left
   ]
   if (point_heading = 2)
   [ ;; right - increase xcor
-    set xcor (xcor + min_dist)
+    set xcor (xcor + min_dist + .1)
   ]
   if (point_heading = 3)
   [ ;; bottom right - decrease ycor, increase xcor
@@ -406,7 +405,7 @@ to shift_left
   ]
   if (point_heading = 4)
   [ ;; bottom - decrease ycor
-    set ycor (ycor - min_dist)
+    set ycor (ycor - min_dist - .1)
   ]
   if (point_heading = 5)
   [ ;; bottom left - decrease ycor, decrease xcor
@@ -415,7 +414,7 @@ to shift_left
   ]
   if (point_heading = 6)
   [ ;; left - decrease xcor
-    set xcor (xcor - min_dist)
+    set xcor (xcor - min_dist - .1)
   ]
   if (point_heading = 7)
   [ ;; top left - increase ycor, decrease xcor
@@ -445,59 +444,45 @@ to-report is_front? [point]
     set angle (min list (theta - head) (360 + (head - theta)))
   ]
 
-  output-print angle
   report (angle <= 20)
 end
-
-
-to-report is_right? [point]
-  let x ([xcor] of myself)
-  let y ([ycor] of myself)
-  let head ([heading] of myself)
-
-  let dist_x (xcor - x)
-  let dist_y (ycor - y)
-
-  let theta (atan dist_x dist_y)
-  let angle 0
-
-  ifelse(head > theta)
-  [
-    set angle (min list (head - theta) (360 + (theta - head)))
-  ]
-  [
-    set angle (min list (theta - head) (360 + (head - theta)))
-  ]
-
-  ;; figure out who's in front
-
-  report (angle > 20 and angle <= 90)
-end
-
 
 to-report is_left? [point]
   let x ([xcor] of myself)
   let y ([ycor] of myself)
-  let head ([heading] of myself)
 
-  let dist_x (xcor - x)
-  let dist_y (ycor - y)
-
-  let theta (atan dist_x dist_y)
-  let angle 0
-
-  ifelse(head > theta)
-  [
-    set angle (min list (head - theta) (360 + (theta - head)))
+  if (point_heading = 0)
+  [ ;; top - ycor >
+    report (ycor > y)
   ]
-  [
-    set angle (min list (theta - head) (360 + (head - theta)))
+  if (point_heading = 1)
+  [ ;; top right - ycor and xcor >
+    report ( (ycor > y) and (xcor > x))
   ]
-
-  ;; figure out who's in front
-
-
-  report (angle > 20 and angle <= 90)
+  if (point_heading = 2)
+  [ ;; right - xcor >
+    report (xcor > x)
+  ]
+  if (point_heading = 3)
+  [ ;; bottom right - y < and x >
+    report ( (ycor < y) and (xcor > x) )
+  ]
+  if (point_heading = 4)
+  [ ;; bottom - y >
+    report (ycor < y)
+  ]
+  if (point_heading = 5)
+  [ ;; bottom left - y and x <
+    report ( (ycor < y) and (xcor < x) )
+  ]
+  if (point_heading = 6)
+  [ ;; left - x <
+    report (xcor < x)
+  ]
+  if (point_heading = 7)
+  [ ;; top left - x < and y >
+    report ( (xcor < x) and (ycor > y) )
+  ]
 end
 
 
@@ -540,23 +525,29 @@ to print_avg_place
 end
 
 to go
-  ;;output-print ticks
-  ask horses with [laps_completed <= laps_needed][move-forward]
-  ask horses with [laps_completed <= laps_needed][finished?]
-  tick-advance timestep
-  if (all? horses [laps_completed > laps_needed]) and (total_runs < 1000)
+  ifelse(total_runs < 10)
   [
-    rerun
+    ;;output-print ticks
+    ask horses with [laps_completed <= laps_needed][move-forward]
+    ask horses with [laps_completed <= laps_needed][finished?]
+    tick-advance timestep
+    if (all? horses [laps_completed > laps_needed]) and (total_runs < 1000)
+    [
+      rerun
+    ]
+    if (ticks > 5)
+    [
+      set is_start false
+    ]
   ]
-  if (total_runs >= 1000)
   [
-    foreach sort-on [places] stats
-    [print_avg_place] ;; FIXME this needs to properly output the stuff
+    if (total_runs = 10)
+    [
+      ask stats [print_avg_place] ;; FIXME this needs to properly output the stuff
+    ]
+    set total_runs (total_runs + 1)
   ]
-  if (ticks > 5)
-  [
-    set is_start false
-  ]
+
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -670,7 +661,7 @@ CHOOSER
 LENGTH_RACE
 LENGTH_RACE
 5.5 8 6
-1
+0
 
 SLIDER
 14
