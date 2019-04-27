@@ -1,6 +1,6 @@
 breed [horses horse]
 breed [stats stat]
-stats-own [name places shows thirds]
+stats-own [name firsts seconds thirds pwin pplace pshow]
 horses-own [name avg_speed std_speed horse_wps_ratio jockey_wps_ratio gate_position
   curspeed curaccel distancetravelled laps_completed
   prevX prevY point_heading] ;; has default parameters xcor, ycor, and heading
@@ -78,7 +78,7 @@ to setup-horses
       ]
      ]
      set laps_completed 0
-     setxy start (-19 + (gate_position * 0.4)) ; there are 0.2647404697 for 8 feet (width)
+     setxy (start + .01) (-19 + (gate_position * 0.2647404697)) ; there are 0.2647404697 for 8 feet (width)
      ;; set curspeed based on a boost
      if (bernoulli horse_wps_ratio)[
        set curspeed BOOST
@@ -91,8 +91,8 @@ to setup-horses
     [
       create-stats 1 [
         set name m_name
-        set places 0
-        set shows 0
+        set firsts 0
+        set seconds 0
         set thirds 0
       ]
     ]
@@ -315,33 +315,31 @@ to move-forward
   ;; Booleans for checking where horses are
   if (not is_start)
   [
-    print "inside"
     let in_front false
-    let speed_in_front 0
+    let speed_in_front curspeed
     let on_left false
     let on_right false
     ;; find location of too close horses
     ask horses with [point_heading = ([point_heading] of myself)] in-radius min_dist
     [ ;; same point heading within radius
-      print self
       if (self != myself)
       [ ;; check to make sure its not us
         ;; find where the horse is and mark appropriately
-        if (is_front? point_heading)
+        ifelse(is_front? point_heading)
         [
-          output-show "in front"
           set in_front true
           ;; mark speed
           set speed_in_front curspeed
         ]
-        ;;if (is_left? point_heading)
-        ;;[
-        ;;  set on_left true
-        ;;]
-        ;;if (is_right? point_heading)
-        ;;[
-        ;;  set on_right true
-        ;;]
+        [
+          ifelse (is_left? point_heading)
+          [
+            set on_left true
+          ]
+          [
+            set on_right true
+          ]
+        ]
       ]
     ]
 
@@ -373,9 +371,10 @@ to move-forward
     if (on_right)
     [
       ;; shift left based on my section of the track
-      ;;shift_left
+      shift_left
     ]
   ]
+
   set distancetravelled distancetravelled + (prevspeed * (timestep / 3600) ) + (0.5 * curaccel * ( (timestep / 3600) ^ 2 ))
   fd ((prevspeed * (timestep / 3600) ) + (0.5 * curaccel * ( (timestep / 3600) ^ 2 ))) * 174.72871
 end
@@ -384,11 +383,11 @@ end
 ;; used to shift a horse to the outside based on its location in the track
 to shift_left
   ;; pythagorean math
-  let shift (min_dist / sqrt(2))
+  let shift ( (min_dist + .1) / sqrt(2))
 
   if (point_heading = 0)
   [ ;; top - increase ycor
-    set ycor (ycor + min_dist)
+    set ycor (ycor + min_dist + .1)
   ]
   if (point_heading = 1)
   [ ;; top right - increase ycor, increase xcor
@@ -397,7 +396,7 @@ to shift_left
   ]
   if (point_heading = 2)
   [ ;; right - increase xcor
-    set xcor (xcor + min_dist)
+    set xcor (xcor + min_dist + .1)
   ]
   if (point_heading = 3)
   [ ;; bottom right - decrease ycor, increase xcor
@@ -406,7 +405,7 @@ to shift_left
   ]
   if (point_heading = 4)
   [ ;; bottom - decrease ycor
-    set ycor (ycor - min_dist)
+    set ycor (ycor - min_dist - .1)
   ]
   if (point_heading = 5)
   [ ;; bottom left - decrease ycor, decrease xcor
@@ -415,7 +414,7 @@ to shift_left
   ]
   if (point_heading = 6)
   [ ;; left - decrease xcor
-    set xcor (xcor - min_dist)
+    set xcor (xcor - min_dist - .1)
   ]
   if (point_heading = 7)
   [ ;; top left - increase ycor, decrease xcor
@@ -445,59 +444,45 @@ to-report is_front? [point]
     set angle (min list (theta - head) (360 + (head - theta)))
   ]
 
-  output-print angle
   report (angle <= 20)
 end
-
-
-to-report is_right? [point]
-  let x ([xcor] of myself)
-  let y ([ycor] of myself)
-  let head ([heading] of myself)
-
-  let dist_x (xcor - x)
-  let dist_y (ycor - y)
-
-  let theta (atan dist_x dist_y)
-  let angle 0
-
-  ifelse(head > theta)
-  [
-    set angle (min list (head - theta) (360 + (theta - head)))
-  ]
-  [
-    set angle (min list (theta - head) (360 + (head - theta)))
-  ]
-
-  ;; figure out who's in front
-
-  report (angle > 20 and angle <= 90)
-end
-
 
 to-report is_left? [point]
   let x ([xcor] of myself)
   let y ([ycor] of myself)
-  let head ([heading] of myself)
 
-  let dist_x (xcor - x)
-  let dist_y (ycor - y)
-
-  let theta (atan dist_x dist_y)
-  let angle 0
-
-  ifelse(head > theta)
-  [
-    set angle (min list (head - theta) (360 + (theta - head)))
+  if (point_heading = 0)
+  [ ;; top - ycor >
+    report (ycor > y)
   ]
-  [
-    set angle (min list (theta - head) (360 + (head - theta)))
+  if (point_heading = 1)
+  [ ;; top right - ycor and xcor >
+    report ( (ycor > y) and (xcor > x))
   ]
-
-  ;; figure out who's in front
-
-
-  report (angle > 20 and angle <= 90)
+  if (point_heading = 2)
+  [ ;; right - xcor >
+    report (xcor > x)
+  ]
+  if (point_heading = 3)
+  [ ;; bottom right - y < and x >
+    report ( (ycor < y) and (xcor > x) )
+  ]
+  if (point_heading = 4)
+  [ ;; bottom - y >
+    report (ycor < y)
+  ]
+  if (point_heading = 5)
+  [ ;; bottom left - y and x <
+    report ( (ycor < y) and (xcor < x) )
+  ]
+  if (point_heading = 6)
+  [ ;; left - x <
+    report (xcor < x)
+  ]
+  if (point_heading = 7)
+  [ ;; top left - x < and y >
+    report ( (xcor < x) and (ycor > y) )
+  ]
 end
 
 
@@ -514,11 +499,11 @@ to finished?
 
     if (count_finished = 1)
     [
-      ask stats with [name = ([name] of myself)][set places (places + 1)]
+      ask stats with [name = ([name] of myself)][set firsts (firsts + 1)]
     ]
     if (count_finished = 2)
     [
-      ask stats with [name = ([name] of myself)][set shows (shows + 1)]
+      ask stats with [name = ([name] of myself)][set seconds (seconds + 1)]
     ]
     if (count_finished = 3)
     [
@@ -534,29 +519,73 @@ to-report bernoulli [p]
   report ((random-float 1) < p )
 end
 
+to compute_stats
+  set pwin ( firsts / total_runs )
+  set pplace ( (firsts + seconds) / total_runs )
+  set pshow ( (firsts + seconds + thirds)/ total_runs )
 
-to print_avg_place
-  output-show ( places / total_runs )
+end
+to print_placing
+  output-print name
+  output-print  word "firsts: " pwin
+  output-print  word "places: " pplace
+  output-print  word "shows: "  pshow
 end
 
 to go
-  ;;output-print ticks
-  ask horses with [laps_completed <= laps_needed][move-forward]
-  ask horses with [laps_completed <= laps_needed][finished?]
-  tick-advance timestep
-  if (all? horses [laps_completed > laps_needed]) and (total_runs < 1000)
+  ifelse(total_runs < trials)
   [
-    rerun
+    ;;output-print ticks
+    ask horses with [laps_completed <= laps_needed][move-forward]
+    ask horses with [laps_completed <= laps_needed][finished?]
+    tick-advance timestep
+    if (all? horses [laps_completed > laps_needed]) and (total_runs < 1000)
+    [
+      rerun
+    ]
+    if (ticks > 5)
+    [
+      set is_start false
+    ]
   ]
-  if (total_runs >= 1000)
   [
-    foreach sort-on [places] stats
-    [print_avg_place] ;; FIXME this needs to properly output the stuff
+    if (total_runs = trials)
+    [
+      ask stats [compute_stats]
+      foreach sort-on [pwin] stats [ the-stat -> ask the-stat [ print_placing ] ]
+      let winner "1"
+      let second "2"
+      let third "3"
+      ask item (NUMBER_OF_HORSES - 1) sort-on [pwin] stats [
+      set winner name]
+      let i NUMBER_OF_HORSES - 1
+      let found false
+      while[not found and i >= 0][
+        ask item i sort-on [pplace] stats [
+           if (winner != name)[
+            set second name
+            set found true
+          ]
+        ]
+        set i i - 1
+      ]
+      set i NUMBER_OF_HORSES - 1
+      set found false
+      while[not found and i >= 0][
+        ask item i sort-on [pshow] stats [
+           if (winner != name and second != name)[
+            set third name
+            set found true
+          ]
+        ]
+        set i i - 1
+      ]
+    output-print word (word "EXACTA: 1. " winner) (word " 2. " second)
+    output-print word (word "TRIFECTA: 1. " winner) (word (word " 2. " second) (word " 3. " third))
+    ]
+    set total_runs (total_runs + 1)
   ]
-  if (ticks > 5)
-  [
-    set is_start false
-  ]
+
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -688,11 +717,26 @@ mph
 HORIZONTAL
 
 OUTPUT
-1320
-579
-1866
-701
+1315
+572
+1863
+922
 11
+
+SLIDER
+17
+548
+189
+581
+TRIALS
+TRIALS
+10
+1000
+10.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
