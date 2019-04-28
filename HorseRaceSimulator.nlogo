@@ -304,7 +304,8 @@ to move-forward
       set curspeed random-normal avg_speed std_speed
     ]
     [
-      set curspeed (curspeed + curaccel * (timestep / 3600 ))
+      let acc curaccel + random-normal 0 500
+      set curspeed (curspeed + acc * (timestep / 3600 ))
     ]
   ;; boost the horse if they win the bernoulli trial
   if (bernoulli horse_wps_ratio)[
@@ -636,10 +637,10 @@ ENVIRONMENT SETUP\n1. Enter length of race\n2. Enter number of horses
 1
 
 BUTTON
-56
-366
-136
-438
+58
+412
+138
+484
 NIL
 setup
 NIL
@@ -658,7 +659,7 @@ INPUTBOX
 1904
 557
 AGENT_PARAMETERS
-NAME: horse1_name,horse2_name,horse3_name,horse4_name,horse5,h6,h7,h8,h9,h10,h11,h12,\nSPEED AVG: 35.321,34.3214,35.3424,34.323,33,34,34,34,34,34,34,34,\nSPEED STD: 1.232,1.231,0.4321,3.2314,1.2,1,1,1,1,1,1,1,\nWPS RATIO HORSE: 0.342,0.343,0.231,0.14321,0.432,0.3,0.3,0.3,0.3,0.3,0.3,0.3,\nWPS RATIO JOCKEY: 0.3242,0.432,0.4321,0.1342,0.4320,0.4,0.4,0.4,0.4,0.4,0.4,0.4,\nGATE POSITION: 3,4,1,2,5,6,7,8,9,10,11,12,\n
+\nNAME: Schmiss,Motion's First,Galileo's Affair,Dancing Starlet,Kittian Hill,Flying Girl,\nSPEED AVG: 36.02736488,35.7246035,36.44602277,36.35691666,35.85755373,35.95958845,\nSPEED STD: 0.492526436,0.479170744,0.427774109,0.346608314,0.323039662,0.239686894,\nWPS RATIO HORSE: 0.4666666,0.301886793,0.59090909,0.375,0.411764706,0.347826087,\nWPS RATIO JOCKEY: 0.413705584,0.297297,0.344702137,0.456184878,0.272645429,0.25,\nGATE POSITION: 8,5,1,6,3,2,\n
 1
 1
 String
@@ -669,16 +670,16 @@ INPUTBOX
 188
 307
 NUMBER_OF_HORSES
-12.0
+8.0
 1
 0
 Number
 
 BUTTON
-58
-456
-137
-521
+60
+502
+139
+567
 go
 go\n
 T
@@ -699,7 +700,7 @@ CHOOSER
 LENGTH_RACE
 LENGTH_RACE
 5.5 8 6
-0
+2
 
 SLIDER
 14
@@ -724,10 +725,10 @@ OUTPUT
 11
 
 SLIDER
-17
-548
-189
-581
+13
+359
+185
+392
 TRIALS
 TRIALS
 10
